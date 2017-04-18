@@ -12,8 +12,7 @@ var content = document.getElementById('root');
 
 var issues = [{
     id: 1, status: 'Open', owner: 'Ravan',
-    created: new Date('2016-08-15'), effort: 5, completionDate: undefined,
-    title: 'Error in console when click Add'
+    created: new Date('2016-08-15'), effort: 5, completionDate: undefined
 }, {
     id: 2, status: 'Assigned', owner: 'Nyx',
     created: new Date('2017-04-10'), effort: 3, completionDate: undefined,
@@ -30,12 +29,35 @@ var IssueList = function (_React$Component) {
     function IssueList() {
         _classCallCheck(this, IssueList);
 
-        return _possibleConstructorReturn(this, (IssueList.__proto__ || Object.getPrototypeOf(IssueList)).apply(this, arguments));
+        var _this = _possibleConstructorReturn(this, (IssueList.__proto__ || Object.getPrototypeOf(IssueList)).call(this));
+
+        _this.state = { issues: issues };
+        window.setTimeout(_this.createTestIssue.bind(_this), 2000);
+        return _this;
     }
 
     _createClass(IssueList, [{
+        key: 'createIssue',
+        value: function createIssue(newIssue) {
+            var newIssues = this.state.issues.splice();
+            newIssue.id = this.state.issues.length + 1;
+            newIssues.push(newIssue);
+            this.setState({ issues: newIssues });
+        }
+    }, {
+        key: 'createTestIssue',
+        value: function createTestIssue() {
+            this.createIssue({
+                title: 'New issue with is auto created',
+                owner: 'Nyx',
+                create: new Date(),
+                status: 'New'
+            });
+        }
+    }, {
         key: 'render',
         value: function render() {
+
             return React.createElement(
                 'div',
                 null,
@@ -46,7 +68,7 @@ var IssueList = function (_React$Component) {
                 ),
                 React.createElement(IssueFilter, null),
                 React.createElement('hr', null),
-                React.createElement(IssueTable, { issues: issues }),
+                React.createElement(IssueTable, { issues: this.state.issues }),
                 React.createElement('hr', null),
                 React.createElement(IssueAdd, null)
             );
@@ -92,6 +114,9 @@ var IssueTable = function (_React$Component3) {
         key: 'render',
         value: function render() {
             var borderedStyle = { border: "1px solid silver", padding: 5 };
+            var issueList = this.props.issues.map(function (i) {
+                return React.createElement(IssueRow, { key: i.id, issue: i });
+            });
             return React.createElement(
                 'table',
                 { style: { borderCollapse: "collapse" } },
@@ -141,9 +166,7 @@ var IssueTable = function (_React$Component3) {
                 React.createElement(
                     'tbody',
                     null,
-                    this.props.issues.map(function (issue) {
-                        return React.createElement(IssueRow, { key: 'issue-' + issue.id, issue: issue });
-                    })
+                    issueList
                 )
             );
         }
@@ -233,5 +256,11 @@ var IssueRow = function (_React$Component5) {
 
     return IssueRow;
 }(React.Component);
+
+IssueRow.defaultProps = {
+    issue: {
+        title: '-- No title --'
+    }
+};
 
 ReactDOM.render(React.createElement(IssueList, null), content);

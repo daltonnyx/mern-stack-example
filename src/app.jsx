@@ -4,7 +4,6 @@ const issues = [
     {
         id: 1, status: 'Open', owner: 'Ravan',
         created: new Date('2016-08-15'), effort: 5, completionDate: undefined,
-        title: 'Error in console when click Add'
     },
     {
         id: 2, status: 'Assigned', owner: 'Nyx',
@@ -19,13 +18,35 @@ const issues = [
 ];
 
 class IssueList extends React.Component {
+    constructor() {
+        super();
+        this.state = {issues : issues};
+        window.setTimeout(this.createTestIssue.bind(this), 2000);
+    }
+    createIssue(newIssue) {
+        const newIssues = this.state.issues.splice();
+        newIssue.id = this.state.issues.length + 1;
+        newIssues.push(newIssue);
+        this.setState({issues: newIssues});
+    }
+
+    createTestIssue() {
+        this.createIssue({
+            title: 'New issue with is auto created',
+            owner: 'Nyx',
+            create: new Date(),
+            status: 'New'
+        });
+    }
+    
     render() {
+        
         return (
             <div>
                 <h1> Issue Tracker </h1>
                 <IssueFilter />
                 <hr />
-                <IssueTable issues={issues} />
+                <IssueTable issues={this.state.issues} />
                 <hr />
                 <IssueAdd />
             </div>
@@ -44,6 +65,7 @@ class IssueFilter extends React.Component {
 class IssueTable extends React.Component {
     render() {
         const borderedStyle = {border: "1px solid silver", padding: 5};
+        const issueList = this.props.issues.map( i => <IssueRow key={i.id} issue={i}/> );
         return (
             <table style={{borderCollapse: "collapse"}}>
                 <thead>
@@ -58,7 +80,7 @@ class IssueTable extends React.Component {
                     </tr>
                 </thead>
                 <tbody>
-                {this.props.issues.map( issue => <IssueRow key={`issue-${issue.id}`} issue={issue} /> )}
+                {issueList}
                 </tbody>
             </table>
         );
@@ -73,7 +95,7 @@ class IssueAdd extends React.Component {
     }
 }
 
-class IssueRow extends React.Component {
+class IssueRow extends React.Component { 
     render() {
         const borderedStyle = {border: "1px solid silver", padding: 4};
         let issue = this.props.issue;
@@ -88,6 +110,12 @@ class IssueRow extends React.Component {
                 <td style={borderedStyle}>{issue.effort}</td>
             </tr>
         );
+    }
+}
+
+IssueRow.defaultProps = {
+    issue : {
+        title: '-- No title --'
     }
 }
 
