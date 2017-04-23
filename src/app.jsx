@@ -1,21 +1,38 @@
 let content = document.getElementById('root');
+const IssueRow = props => (
+            <tr>
+                <td>{props.issue.id}</td>
+                <td>{props.issue.title}</td>
+                <td>{props.issue.owner}</td>
+                <td>{props.issue.created.toDateString()}</td>
+                <td>{props.issue.status}</td>
+                <td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
+                <td>{props.issue.effort}</td>
+            </tr>
+        );
 
-const issues = [
-    {
-        id: 1, status: 'Closed', owner: 'Ravan',
-        created: new Date('2016-08-15'), effort: 5, completionDate: undefined,
-    },
-    {
-        id: 2, status: 'Assigned', owner: 'Nyx',
-        created: new Date('2017-04-10'), effort: 3, completionDate: undefined,
-        title: 'Issue with node JS'
-    },
-    {
-        id: 3, status: 'Closed', owner: 'Eddie',
-        created: new Date('2016-08-15'), effort: 10, completionDate: new Date('2016-08-25'),
-        title: 'Missing bottom border on panel'
-    },
-];
+const IssueTable = props => {
+    const issueList = props.issues.map( i => <IssueRow key={i.id} issue={i}/> );
+    return (
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th> 
+                    <th>Owner</th> 
+                    <th>Created</th> 
+                    <th>Status</th> 
+                    <th>Completion Date</th> 
+                    <th>Effort</th> 
+                </tr>
+            </thead>
+            <tbody>
+            {issueList}
+            </tbody>
+        </table>
+    );
+};
+
 
 class IssueList extends React.Component {
     constructor() {
@@ -29,14 +46,35 @@ class IssueList extends React.Component {
     }
 
     loadData() {
-        window.setTimeout(() => { this.setState({issues: issues}) }, 300);
+        fetch('http://localhost:3000/api/issues').then(res =>
+           res.json()
+        ).then(resData => {
+            resData.records.forEach(issue => {
+                issue.created = new Date(issue.created);
+                if(issue.completionDate)
+                    issue.completionDate = new Date(issue.completionDate);
+            });
+            this.setState({issues: resData.records});
+        });
     }
 
     createIssue(newIssue) {
-        let newIssues = this.state.issues.slice();
-        newIssue.id = this.state.issues.length + 1;
-        newIssues.push(newIssue);
-        this.setState({issues: newIssues});
+        let headers = new Headers({'Content-Type': 'application/json'});
+        let postFetch = {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(newIssue),
+
+        };
+        fetch('http://localhost:3000/api/issues', postFetch).then(res => res.json()).then(data => {
+            data.records.forEach(i => {
+                i.created = new Date(i.created);
+                if(i.completionDate)
+                    i.completionDate = new Date(i.completionDate);
+            });
+            this.setState({issues: data.records});    
+        });
+        
     }
 
     createTestIssue() {
@@ -85,7 +123,7 @@ class IssueAdd extends React.Component {
             owner: form.owner.value,
             title: form.title.value,
             status: 'New',
-            created: new Date(),
+            
         });
         form.reset();
     }
@@ -103,39 +141,5 @@ class IssueAdd extends React.Component {
     }
 }
 
-
-const IssueRow = (props) => (
-            <tr>
-                <td>{props.issue.id}</td>
-                <td>{props.issue.title}</td>
-                <td>{props.issue.owner}</td>
-                <td>{props.issue.created.toDateString()}</td>
-                <td>{props.issue.status}</td>
-                <td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
-                <td>{props.issue.effort}</td>
-            </tr>
-        );
-
-const IssueTable = (props) => {
-    const issueList = props.issues.map( i => <IssueRow key={i.id} issue={i}/> );
-    return (
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Title</th> 
-                    <th>Owner</th> 
-                    <th>Created</th> 
-                    <th>Status</th> 
-                    <th>Completion Date</th> 
-                    <th>Effort</th> 
-                </tr>
-            </thead>
-            <tbody>
-            {issueList}
-            </tbody>
-        </table>
-    );
-};
 
 ReactDOM.render(<IssueList />, content);
