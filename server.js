@@ -27,6 +27,38 @@ const issuesArray = [
     },
 ];
 
+const StatusValid = {
+    New: true,
+    Open: true,
+    Assigned: true,
+    Fixed: true,
+    Verified: true,
+    Closed: true
+};
+
+const IssuePropValid = {
+    id: 'required',
+    status: 'required',
+    owner: 'required',
+    effort: 'required',
+    created: 'required',
+    completionDate: 'optional',
+    title: 'required'
+}
+
+function validateIssue(issue) {
+    for(const field in issue) {
+        const type = IssuePropValid[field];
+        if(!type)
+            delete issue[field];
+        else if (type == 'required' && !issue[field])
+            return `${field} is required`;
+    }
+    if(!StatusValid[issue.status])
+        return `${issue.status} is not a valid status.`;
+    return null;
+}
+
 
 app.get('/api/issues', (req,res) => {
  const metadata = {total_count: issuesArray.length};
@@ -41,6 +73,11 @@ app.post('/api/issues', (req, res) => {
  newIssue.created = new Date();
  if(!newIssue.status)
     newIssue.status = 'New';
+    var err = validateIssue(newIssue);
+    if(err) {
+        res.status(422).json({message: err});
+        return; 
+    }
  issuesArray.push(newIssue);
  res.json({_metadata: {total_count: issuesArray.length}, records: issuesArray});
 });

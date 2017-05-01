@@ -155,13 +155,21 @@ var IssueList = function (_React$Component) {
 
             };
             fetch('http://localhost:3000/api/issues', postFetch).then(function (res) {
-                return res.json();
-            }).then(function (data) {
-                data.records.forEach(function (i) {
-                    i.created = new Date(i.created);
-                    if (i.completionDate) i.completionDate = new Date(i.completionDate);
-                });
-                _this3.setState({ issues: data.records });
+                if (res.ok) {
+                    res.json().then(function (data) {
+                        data.records.forEach(function (i) {
+                            i.created = new Date(i.created);
+                            if (i.completionDate) i.completionDate = new Date(i.completionDate);
+                        });
+                        _this3.setState({ issues: data.records });
+                    });
+                } else {
+                    res.json().then(function (error) {
+                        console.log(error.message);
+                    });
+                }
+            }).catch(function (err) {
+                console.log(err.message);
             });
         }
     }, {

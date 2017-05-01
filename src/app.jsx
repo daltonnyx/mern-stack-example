@@ -66,13 +66,24 @@ class IssueList extends React.Component {
             body: JSON.stringify(newIssue),
 
         };
-        fetch('http://localhost:3000/api/issues', postFetch).then(res => res.json()).then(data => {
-            data.records.forEach(i => {
-                i.created = new Date(i.created);
-                if(i.completionDate)
-                    i.completionDate = new Date(i.completionDate);
-            });
-            this.setState({issues: data.records});    
+        fetch('http://localhost:3000/api/issues', postFetch).then(res => {
+            if(res.ok) {
+                res.json().then(data => {
+                    data.records.forEach(i => {
+                        i.created = new Date(i.created);
+                        if(i.completionDate)
+                            i.completionDate = new Date(i.completionDate);
+                    });
+                    this.setState({issues: data.records});    
+                })
+            }
+            else {
+                res.json().then(error => {
+                    console.log(error.message);
+                });
+            }
+        }).catch(err => {
+            console.log(err.message);
         });
         
     }
